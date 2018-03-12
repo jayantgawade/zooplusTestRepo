@@ -90,9 +90,14 @@
         <property name="flexibleSearchService" ref="flexibleSearchService"/>
     </bean>
     <alias name="defaultRestClient" alias="restClient"/>
-    <bean id="defaultRestClient" class="com.zooplus.restclient.service.impl.DefaultRestClient">
+    <bean id="defaultRestClient" class="com.zooplus.restclient.service.impl.DefaultRestClient" parent="abstractRestClient"/>
+    
+     <alias name="defaultAbstractRestClient" alias="abstractRestClient"/>
+    <bean id="defaultAbstractRestClient" class=" com.zooplus.restclient.service.impl.DefaultAbstractRestClient" abstract="true">
     <property name="restTemplate" ref="restTemplate"></property>
     </bean>
+    
+   
     
     <alias alias="restTemplate" name="defaultRestTemplate" />
 	<bean id="defaultRestTemplate" class="org.springframework.web.client.RestTemplate" />

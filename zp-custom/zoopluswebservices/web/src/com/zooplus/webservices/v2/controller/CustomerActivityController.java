@@ -53,14 +53,13 @@ public class CustomerActivityController extends BaseCommerceController
 
 	@Secured(
 	{ "ROLE_CLIENT", "ROLE_TRUSTED_CLIENT" })
-
 	@RequestMapping(value = "/update", method = RequestMethod.PUT, consumes =
 	{ MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	@ResponseBody
 	public void updateActivity(@RequestParam(required = true) final String customerUpdated)
 	{
 
-		LOG.info("customer updated : " + customerUpdated + new Date());
+		LOG.info("customer updated : " + customerUpdated + " " + new Date());
 
 	}
 

@@ -19,6 +19,6 @@ public interface RestClient
 
 	void logOut();
 
-	void logActivity(String activity);
+	void logUserActivity(String activity);
 
 }

@@ -526,7 +526,7 @@ public class AccountPageController extends AbstractSearchPageController
 				customerFacade.updateProfile(customerData);
 				GlobalMessages.addFlashMessage(redirectAttributes, GlobalMessages.CONF_MESSAGES_HOLDER,
 						"text.account.profile.confirmationUpdated", null);
-				restclient.logActivity(customerData.getFirstName());
+				restclient.logUserActivity(customerData.getFirstName());
 			}
 			catch (final DuplicateUidException e)
 			{
