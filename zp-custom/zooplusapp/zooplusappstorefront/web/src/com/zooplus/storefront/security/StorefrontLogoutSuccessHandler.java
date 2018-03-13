@@ -62,7 +62,8 @@ public class StorefrontLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
 
 		// Delegate to default redirect behaviour
 		super.onLogoutSuccess(request, response, authentication);
-		restclient.logOut();
+
+		restclient.logOut(authentication.getPrincipal().toString());
 
 	}
 
