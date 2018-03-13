@@ -50,14 +50,14 @@ public abstract class DefaultAbstractRestClient implements RestClient
 
 	}
 
-	protected MultiValueMap<String, String> getHeader()
+	protected HttpEntity<?> getHeader()
 	{
 		final MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
 		final Map map = new HashMap<String, String>();
 		map.put("Content-Type", "application/json");
 		map.put("Authorization", "Bearer " + getToken());
 		headers.setAll(map);
-		return headers;
+		return new HttpEntity<>(headers);
 	}
 
 	@Required

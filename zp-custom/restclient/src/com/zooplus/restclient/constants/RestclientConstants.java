@@ -27,6 +27,7 @@ public final class RestclientConstants extends GeneratedRestclientConstants
 	public static final String PLATFORM_LOGO_CODE = "restclientPlatformLogo";
 
 	public static final String ACCESS_TOKEN_URI = "https://localhost:7002/authorizationserver/oauth/token?client_id=trusted_client&client_secret=nimda&grant_type=client_credentials";
-	public static final String LOGIN_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/activity/chekLogin?isLoggedin=";
+	//public static final String LOGIN_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/activity/chekLogin?isLoggedin=";
+	public static final String LOGIN_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/users/{userId}/login?";
 	public static final String USET_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/activity/update?customerUpdated=";
 }

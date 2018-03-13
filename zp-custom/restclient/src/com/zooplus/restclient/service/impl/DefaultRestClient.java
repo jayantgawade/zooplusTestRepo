@@ -12,9 +12,6 @@
 package com.zooplus.restclient.service.impl;
 
 import org.apache.log4j.Logger;
-import org.springframework.http.HttpEntity;
-
-import com.zooplus.restclient.constants.RestclientConstants;
 
 
 /**
@@ -26,26 +23,31 @@ public class DefaultRestClient extends DefaultAbstractRestClient
 	private static final Logger LOG = Logger.getLogger(DefaultRestClient.class);
 
 	@Override
-	public void logIn()
+	public void logIn(final String userName, final String password)
 	{
-		final HttpEntity<?> request = new HttpEntity<>(getHeader());
-		restTemplate.postForEntity(RestclientConstants.LOGIN_ACTIVITY_URI + true, request, String.class);
+		final String LOGIN_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/users/" + userName + "/login?";
+		restTemplate.put(LOGIN_ACTIVITY_URI + "newLogin=" + userName + "&password=" + password, getHeader());
+		LOG.info("User logged in the system");
 
 	}
 
 	@Override
-	public void logOut()
+	public void logOut(final String userName)
 	{
-		final HttpEntity<?> request = new HttpEntity<>(getHeader());
-		restTemplate.postForEntity(RestclientConstants.LOGIN_ACTIVITY_URI + false, request, String.class);
+		final String LOGOUT_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/users/" + userName
+				+ "/logout?";
+		restTemplate.postForEntity(LOGOUT_ACTIVITY_URI, getHeader(), String.class);
+
+		LOG.info("User logged out from the system");
 	}
 
 	@Override
-	public void logUserActivity(final String activity)
+	public void logUserActivity(final String userName, final String activity)
 	{
+		final String USER_ACTIVITY_URI = "https://localhost:7002/zoopluswebservices/v2/electronics/users/" + userName + "?activity="
+				+ activity;
 
-		final HttpEntity<?> request = new HttpEntity<>(getHeader());
-		restTemplate.put(RestclientConstants.USET_ACTIVITY_URI + activity, request);
+		restTemplate.put(USER_ACTIVITY_URI + activity, getHeader());
 	}
 
 

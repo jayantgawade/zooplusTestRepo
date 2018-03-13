@@ -15,10 +15,10 @@ package com.zooplus.restclient.service;
 public interface RestClient
 {
 
-	void logIn();
+	void logIn(final String userName, final String password);
 
-	void logOut();
+	void logUserActivity(final String userName, String activity);
 
-	void logUserActivity(String activity);
+	void logOut(String userName);
 
 }
