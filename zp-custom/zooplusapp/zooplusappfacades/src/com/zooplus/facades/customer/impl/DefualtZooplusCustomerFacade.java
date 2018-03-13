@@ -23,7 +23,8 @@ public class DefualtZooplusCustomerFacade extends DefaultCustomerFacade
 	public void loginSuccess()
 	{
 		super.loginSuccess();
-		restclient.logIn();
+
+		restclient.logIn("jayantg@pragiti.com", "Jay@jay1");
 	}
 
 	/**
