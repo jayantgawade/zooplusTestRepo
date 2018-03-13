@@ -12,7 +12,6 @@ package com.zooplus.webservices.v2.controller;
 
 import de.hybris.platform.commercefacades.address.AddressVerificationFacade;
 import de.hybris.platform.commercefacades.address.data.AddressVerificationResult;
-import de.hybris.platform.commercefacades.customer.CustomerFacade;
 import de.hybris.platform.commercefacades.customergroups.CustomerGroupFacade;
 import de.hybris.platform.commercefacades.order.data.CCPaymentInfoData;
 import de.hybris.platform.commercefacades.order.data.CCPaymentInfoDatas;
@@ -25,6 +24,7 @@ import de.hybris.platform.commercefacades.user.data.UserGroupDataList;
 import de.hybris.platform.commercefacades.user.exceptions.PasswordMismatchException;
 import de.hybris.platform.commerceservices.address.AddressVerificationDecision;
 import de.hybris.platform.commerceservices.customer.DuplicateUidException;
+import de.hybris.platform.commerceservices.search.pagedata.SearchPageData;
 import de.hybris.platform.commercewebservicescommons.dto.order.PaymentDetailsListWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.order.PaymentDetailsWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.user.AddressListWsDTO;
@@ -35,17 +35,19 @@ import de.hybris.platform.commercewebservicescommons.dto.user.UserSignUpWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.user.UserWsDTO;
 import de.hybris.platform.commercewebservicescommons.errors.exceptions.RequestParameterException;
 import de.hybris.platform.converters.Populator;
-import de.hybris.platform.core.GenericSearchConstants.LOG;
 import de.hybris.platform.core.PK.PKException;
+import de.hybris.platform.core.enums.OrderStatus;
 import de.hybris.platform.core.model.user.UserModel;
-import de.hybris.platform.core.servicelayer.data.SearchPageData;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import de.hybris.platform.servicelayer.exceptions.UnknownIdentifierException;
 import de.hybris.platform.servicelayer.model.ModelService;
 import de.hybris.platform.servicelayer.user.UserService;
 import de.hybris.platform.webservicescommons.cache.CacheControl;
 import de.hybris.platform.webservicescommons.cache.CacheControlDirective;
+import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
+import de.hybris.platform.webservicescommons.dto.error.ErrorWsDTO;
 import de.hybris.platform.webservicescommons.errors.exceptions.WebserviceValidationException;
+import de.hybris.platform.webservicescommons.model.OAuthAccessTokenModel;
 import de.hybris.platform.webservicescommons.oauth2.token.OAuthTokenService;
 
 import java.io.UnsupportedEncodingException;
@@ -84,6 +86,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.util.UriUtils;
 
+import com.zooplus.facades.customer.ZooplusCustomerFacade;
 import com.zooplus.webservices.constants.YcommercewebservicesConstants;
 import com.zooplus.webservices.populator.HttpRequestCustomerDataPopulator;
 import com.zooplus.webservices.populator.options.PaymentInfoOption;
@@ -109,7 +112,7 @@ public class UsersController extends BaseCommerceController
 {
 	private static final Logger LOG = Logger.getLogger(UsersController.class);
 	@Resource(name = "customerFacade")
-	private CustomerFacade customerFacade;
+	private ZooplusCustomerFacade customerFacade;
 	@Resource(name = "userService")
 	private UserService userService;
 	@Resource(name = "modelService")
@@ -1434,12 +1437,9 @@ public class UsersController extends BaseCommerceController
 		}
 
 		LOG.info(customer.getFirstName() + " perform activity on the app " + activity + " on date" + new Date());
-		/*
-		 * customer.setFirstName(firstName); customer.setLastName(lastName); customer.setTitleCode(titleCode);
-		 * customer.setLanguage(null); customer.setCurrency(null); httpRequestCustomerDataPopulator.populate(request, customer);
-		 *
-		 * customerFacade.updateFullProfile(customer);
-		 */
+
+		customerFacade.recordActivity(customer, activity, new Date());
+
 	}
 
 }
