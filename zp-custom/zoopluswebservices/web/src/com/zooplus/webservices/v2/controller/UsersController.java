@@ -25,7 +25,6 @@ import de.hybris.platform.commercefacades.user.data.UserGroupDataList;
 import de.hybris.platform.commercefacades.user.exceptions.PasswordMismatchException;
 import de.hybris.platform.commerceservices.address.AddressVerificationDecision;
 import de.hybris.platform.commerceservices.customer.DuplicateUidException;
-import de.hybris.platform.commerceservices.search.pagedata.SearchPageData;
 import de.hybris.platform.commercewebservicescommons.dto.order.PaymentDetailsListWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.order.PaymentDetailsWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.user.AddressListWsDTO;
@@ -36,28 +35,24 @@ import de.hybris.platform.commercewebservicescommons.dto.user.UserSignUpWsDTO;
 import de.hybris.platform.commercewebservicescommons.dto.user.UserWsDTO;
 import de.hybris.platform.commercewebservicescommons.errors.exceptions.RequestParameterException;
 import de.hybris.platform.converters.Populator;
+import de.hybris.platform.core.GenericSearchConstants.LOG;
 import de.hybris.platform.core.PK.PKException;
-import de.hybris.platform.core.enums.OrderStatus;
 import de.hybris.platform.core.model.user.UserModel;
+import de.hybris.platform.core.servicelayer.data.SearchPageData;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import de.hybris.platform.servicelayer.exceptions.UnknownIdentifierException;
 import de.hybris.platform.servicelayer.model.ModelService;
 import de.hybris.platform.servicelayer.user.UserService;
 import de.hybris.platform.webservicescommons.cache.CacheControl;
 import de.hybris.platform.webservicescommons.cache.CacheControlDirective;
-import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
-import de.hybris.platform.webservicescommons.dto.error.ErrorWsDTO;
 import de.hybris.platform.webservicescommons.errors.exceptions.WebserviceValidationException;
-import com.zooplus.webservices.constants.YcommercewebservicesConstants;
-import com.zooplus.webservices.populator.HttpRequestCustomerDataPopulator;
-import com.zooplus.webservices.populator.options.PaymentInfoOption;
-import com.zooplus.webservices.user.data.AddressDataList;
-import com.zooplus.webservices.validation.data.AddressValidationData;
+import de.hybris.platform.webservicescommons.oauth2.token.OAuthTokenService;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +64,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -87,6 +83,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.util.UriUtils;
+
+import com.zooplus.webservices.constants.YcommercewebservicesConstants;
+import com.zooplus.webservices.populator.HttpRequestCustomerDataPopulator;
+import com.zooplus.webservices.populator.options.PaymentInfoOption;
+import com.zooplus.webservices.user.data.AddressDataList;
+import com.zooplus.webservices.validation.data.AddressValidationData;
 
 
 /**
@@ -132,6 +134,9 @@ public class UsersController extends BaseCommerceController
 	private Validator guestConvertingDTOValidator;
 	@Resource(name = "passwordStrengthValidator")
 	private Validator passwordStrengthValidator;
+
+	@Autowired
+	private OAuthTokenService oauthTokenService;
 
 	/**
 	 * Registers a customer. The following two sets of parameters are available:
@@ -351,27 +356,22 @@ public class UsersController extends BaseCommerceController
 	 * @security Permitted for trusted clients, customers and customer managers. Trusted client or customer manager is able
 	 *           to impersonate as any other user and change profile on their behalf.
 	 */
-	@Secured(
-	{ "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
-	@RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
-	@ResponseStatus(HttpStatus.OK)
-	public void putUser(@RequestParam final String firstName, @RequestParam final String lastName,
-			@RequestParam(required = true) final String titleCode, final HttpServletRequest request) throws DuplicateUidException
-	{
-		final CustomerData customer = customerFacade.getCurrentCustomer();
-		if (LOG.isDebugEnabled())
-		{
-			LOG.debug("putCustomer: userId=" + customer.getUid());
-		}
-		customer.setFirstName(firstName);
-		customer.setLastName(lastName);
-		customer.setTitleCode(titleCode);
-		customer.setLanguage(null);
-		customer.setCurrency(null);
-		httpRequestCustomerDataPopulator.populate(request, customer);
-
-		customerFacade.updateFullProfile(customer);
-	}
+	/*
+	 * @Secured( { "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
+	 *
+	 * @RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
+	 *
+	 * @ResponseStatus(HttpStatus.OK) public void putUser(@RequestParam final String firstName, @RequestParam final String
+	 * lastName,
+	 *
+	 * @RequestParam(required = true) final String titleCode, final HttpServletRequest request) throws DuplicateUidException
+	 * { final CustomerData customer = customerFacade.getCurrentCustomer(); if (LOG.isDebugEnabled()) {
+	 * LOG.debug("putCustomer: userId=" + customer.getUid()); } customer.setFirstName(firstName);
+	 * customer.setLastName(lastName); customer.setTitleCode(titleCode); customer.setLanguage(null);
+	 * customer.setCurrency(null); httpRequestCustomerDataPopulator.populate(request, customer);
+	 *
+	 * customerFacade.updateFullProfile(customer); }
+	 */
 
 	/**
 	 * Updates customer profile. Attributes not provided in the request body will be defined again (set to null or default).
@@ -383,24 +383,21 @@ public class UsersController extends BaseCommerceController
 	 * @security Permitted for trusted clients, customers and customer managers. Trusted client or customer manager is able
 	 *           to impersonate as any other user and change profile on their behalf.
 	 */
-	@Secured(
-	{ "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
-	@RequestMapping(value = "/{userId}", method = RequestMethod.PUT, consumes =
-	{ MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-	@ResponseStatus(HttpStatus.OK)
-	public void putUser(@RequestBody final UserWsDTO user) throws DuplicateUidException
-	{
-		validate(user, "user", putUserDTOValidator);
-
-		final CustomerData customer = customerFacade.getCurrentCustomer();
-		if (LOG.isDebugEnabled())
-		{
-			LOG.debug("putCustomer: userId=" + customer.getUid());
-		}
-
-		getDataMapper().map(user, customer, "firstName,lastName,titleCode,currency(isocode),language(isocode)", true);
-		customerFacade.updateFullProfile(customer);
-	}
+	/*
+	 * @Secured( { "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
+	 *
+	 * @RequestMapping(value = "/{userId}", method = RequestMethod.PUT, consumes = { MediaType.APPLICATION_JSON_VALUE,
+	 * MediaType.APPLICATION_XML_VALUE })
+	 *
+	 * @ResponseStatus(HttpStatus.OK) public void putUser(@RequestBody final UserWsDTO user) throws DuplicateUidException {
+	 * validate(user, "user", putUserDTOValidator);
+	 *
+	 * final CustomerData customer = customerFacade.getCurrentCustomer(); if (LOG.isDebugEnabled()) {
+	 * LOG.debug("putCustomer: userId=" + customer.getUid()); }
+	 *
+	 * getDataMapper().map(user, customer, "firstName,lastName,titleCode,currency(isocode),language(isocode)", true);
+	 * customerFacade.updateFullProfile(customer); }
+	 */
 
 	/**
 	 * Updates customer profile. Only attributes provided in the request body will be changed.
@@ -1408,4 +1405,41 @@ public class UsersController extends BaseCommerceController
 
 		return orderHistoriesData;
 	}
+
+	@Secured(
+	{ "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
+	@RequestMapping(value = "/{userId}/logout", method = RequestMethod.POST)
+	@ResponseStatus(value = HttpStatus.ACCEPTED)
+	public void logout(@PathVariable final String userId)
+	{
+		final List<OAuthAccessTokenModel> tokens = oauthTokenService.getAccessTokensForClient(userId);
+		tokens.stream().forEach(token -> oauthTokenService.removeAccessToken(token.getTokenId()));
+		//	oauthTokenService.removeAccessToken(access_token);
+
+
+	}
+
+
+	@Secured(
+	{ "ROLE_CUSTOMERGROUP", "ROLE_TRUSTED_CLIENT", "ROLE_CUSTOMERMANAGERGROUP" })
+	@RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
+	@ResponseStatus(HttpStatus.OK)
+	public void putUserActivity(@RequestParam(required = true) final String activity, final HttpServletRequest request)
+			throws DuplicateUidException
+	{
+		final CustomerData customer = customerFacade.getCurrentCustomer();
+		if (LOG.isDebugEnabled())
+		{
+			LOG.debug("putCustomer: userId=" + customer.getUid());
+		}
+
+		LOG.info(customer.getFirstName() + " perform activity on the app " + activity + " on date" + new Date());
+		/*
+		 * customer.setFirstName(firstName); customer.setLastName(lastName); customer.setTitleCode(titleCode);
+		 * customer.setLanguage(null); customer.setCurrency(null); httpRequestCustomerDataPopulator.populate(request, customer);
+		 *
+		 * customerFacade.updateFullProfile(customer);
+		 */
+	}
+
 }

@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 
-
 @Controller
 @RequestMapping(value = "/{baseSiteId}/activity")
 @CacheControl(directive = CacheControlDirective.NO_CACHE)
@@ -62,6 +61,5 @@ public class CustomerActivityController extends BaseCommerceController
 		LOG.info("customer updated : " + customerUpdated + " " + new Date());
 
 	}
-
 
 }
